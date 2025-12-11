@@ -259,16 +259,37 @@
     </div>
   </footer>
 
-  <!-- Telegram chat button -->
-  <a
-    href="https://t.me/YOUR_BOT_USERNAME"
-    class="tg-chat-fab"
-    target="_blank"
-    rel="noopener"
-    aria-label="Telegram ilə yazış"
-  >
-    <span class="tg-chat-icon">✈️</span>
-  </a>
+  <!-- Live chat widget -->
+  <div class="chat-launcher" id="chatLauncher" aria-label="Canlı çat">
+    💬
+  </div>
+
+  <div class="chat-widget" id="chatWidget" aria-label="Datatek canlı çat">
+    <div class="chat-header">
+      <div>
+        <strong>Datatek canlı çat</strong>
+        <p>Suallarını yaz, komandamız və ya bot cavab versin.</p>
+      </div>
+      <button class="chat-close" id="chatCloseBtn">×</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-message bot">
+        Salam 👋 Mən Datatek assistentiyəm. Necə kömək edə bilərəm?
+      </div>
+    </div>
+
+    <form class="chat-input-row" id="chatForm">
+      <input
+        type="text"
+        id="chatInput"
+        placeholder="Mesajını yaz..."
+        autocomplete="off"
+        required
+      />
+      <button type="submit">Göndər</button>
+    </form>
+  </div>
 
   <script src="app.js"></script>
 </body>

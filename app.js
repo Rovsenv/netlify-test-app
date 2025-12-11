@@ -96,3 +96,81 @@ themeToggle.addEventListener("click", () => {
   const current = root.getAttribute("data-theme") || "dark";
   setTheme(current === "dark" ? "light" : "dark");
 });
+
+// ====== Live chat + n8n integration ======
+const chatLauncher = document.getElementById("chatLauncher");
+const chatWidget = document.getElementById("chatWidget");
+const chatCloseBtn = document.getElementById("chatCloseBtn");
+const chatForm = document.getElementById("chatForm");
+const chatInput = document.getElementById("chatInput");
+const chatMessages = document.getElementById("chatMessages");
+
+// BURANI ÖZ N8N WEBHOOK URL-İN İLƏ DƏYİŞ!
+const N8N_WEBHOOK_URL = "https://SENIN-N8N-DOMENIN.com/webhook/datatek-chat";
+
+function appendMessage(text, sender = "bot") {
+  const div = document.createElement("div");
+  div.classList.add("chat-message", sender);
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+if (chatLauncher && chatWidget) {
+  chatLauncher.addEventListener("click", () => {
+    chatWidget.classList.add("open");
+  });
+}
+
+if (chatCloseBtn && chatWidget) {
+  chatCloseBtn.addEventListener("click", () => {
+    chatWidget.classList.remove("open");
+  });
+}
+
+if (chatForm && chatInput) {
+  chatForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const message = chatInput.value.trim();
+    if (!message) return;
+
+    // Ekranda user mesajını göstər
+    appendMessage(message, "user");
+    chatInput.value = "";
+
+    // "Yazılır..." mesajı
+    appendMessage("Yazılır...", "bot");
+    const typingEl = chatMessages.lastElementChild;
+
+    try {
+      const res = await fetch(N8N_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message,
+          source: "datatek-website",
+          time: new Date().toISOString(),
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (typingEl) typingEl.remove();
+
+      const replyText =
+        data.reply ||
+        "Mesajını aldıq, komandamız tezliklə səninlə əlaqə saxlayacaq ✅";
+
+      appendMessage(replyText, "bot");
+    } catch (err) {
+      console.error(err);
+      if (typingEl) typingEl.remove();
+      appendMessage(
+        "Xəta baş verdi. Zəhmət olmasa bir az sonra yenidən yoxla.",
+        "bot"
+      );
+    }
+  });
+}
