@@ -105,8 +105,8 @@ const chatForm = document.getElementById("chatForm");
 const chatInput = document.getElementById("chatInput");
 const chatMessages = document.getElementById("chatMessages");
 
-// BURANI ÖZ N8N WEBHOOK URL-İN İLƏ DƏYİŞ!
-const N8N_WEBHOOK_URL = "https://n8n.datatek.tech/webhook-test/datatek-chat";
+// PROD webhook URL (n8n)
+const N8N_WEBHOOK_URL = "https://n8n.datatek.tech/webhook/datatek-chat";
 
 function appendMessage(text, sender = "bot") {
   const div = document.createElement("div");
@@ -165,10 +165,10 @@ if (chatForm && chatInput) {
 
       appendMessage(replyText, "bot");
     } catch (err) {
-      console.error(err);
+      console.error("n8n xətası:", err);
       if (typingEl) typingEl.remove();
       appendMessage(
-        "Xəta baş verdi. Zəhmət olmasa bir az sonra yenidən yoxla.",
+        "Serverə qoşulmaq alınmadı. Zəhmət olmasa bir az sonra yenidən yoxla.",
         "bot"
       );
     }
