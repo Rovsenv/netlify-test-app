@@ -522,6 +522,46 @@ body {
   font-size: 0.8rem;
 }
 
+/* Telegram floating chat button */
+.tg-chat-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2aabee, #229ed9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+  text-decoration: none;
+  z-index: 50;
+  transition: transform 0.18s ease-out, box-shadow 0.18s ease-out,
+    opacity 0.18s ease-out;
+  opacity: 0.96;
+}
+
+.tg-chat-fab:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  opacity: 1;
+}
+
+.tg-chat-icon {
+  font-size: 1.5rem;
+}
+
+/* Kiçik ekranlarda bir az yuxarı qaldıraq */
+@media (max-width: 600px) {
+  .tg-chat-fab {
+    right: 14px;
+    bottom: 14px;
+    width: 50px;
+    height: 50px;
+  }
+}
+
 /* Responsive */
 
 @media (max-width: 800px) {
