@@ -106,7 +106,7 @@ const chatInput = document.getElementById("chatInput");
 const chatMessages = document.getElementById("chatMessages");
 
 // BURANI ÖZ N8N WEBHOOK URL-İN İLƏ DƏYİŞ!
-const N8N_WEBHOOK_URL = "https://SENIN-N8N-DOMENIN.com/webhook/datatek-chat";
+const N8N_WEBHOOK_URL = "https://n8n.datatek.tech/webhook-test/datatek-chat";
 
 function appendMessage(text, sender = "bot") {
   const div = document.createElement("div");
