@@ -106,7 +106,7 @@ const chatInput = document.getElementById("chatInput");
 const chatMessages = document.getElementById("chatMessages");
 
 // PROD webhook URL (n8n)
-const N8N_WEBHOOK_URL = "https://n8n.datatek.tech/webhook/datatek-chat";
+const N8N_WEBHOOK_URL = "https://n8n.datatek.tech/webhook-test/datatek-chat";
 
 function appendMessage(text, sender = "bot") {
   const div = document.createElement("div");
