@@ -15,7 +15,7 @@ document.querySelectorAll(".nav a[href^='#']").forEach((link) => {
     const targetId = link.getAttribute("href").substring(1);
     scrollToSection(targetId);
     const nav = document.querySelector(".nav");
-    nav.classList.remove("open");
+    if (nav) nav.classList.remove("open");
   });
 });
 
@@ -24,7 +24,7 @@ const burgerBtn = document.getElementById("burgerBtn");
 if (burgerBtn) {
   burgerBtn.addEventListener("click", () => {
     const nav = document.querySelector(".nav");
-    nav.classList.toggle("open");
+    if (nav) nav.classList.toggle("open");
   });
 }
 
@@ -54,6 +54,8 @@ filterButtons.forEach((btn) => {
 const faqItems = document.querySelectorAll(".faq-item");
 faqItems.forEach((item) => {
   const question = item.querySelector(".faq-question");
+  if (!question) return;
+
   question.addEventListener("click", () => {
     const isOpen = item.classList.contains("open");
     faqItems.forEach((i) => i.classList.remove("open"));
@@ -68,16 +70,19 @@ const statusEl = document.getElementById("formStatus");
 if (form) {
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    statusEl.textContent = "Müraciətin göndərildi! Tezliklə əlaqə saxlayacağıq ✅";
+    if (statusEl) {
+      statusEl.textContent = "Müraciətin göndərildi! Tezliklə əlaqə saxlayacağıq ✅";
+      setTimeout(() => {
+        statusEl.textContent = "";
+      }, 4000);
+    }
     form.reset();
-    setTimeout(() => {
-      statusEl.textContent = "";
-    }, 4000);
   });
 }
 
 // Year in footer
-document.getElementById("year").textContent = new Date().getFullYear();
+const yearEl = document.getElementById("year");
+if (yearEl) yearEl.textContent = new Date().getFullYear();
 
 // Theme toggle (dark / light)
 const themeToggle = document.getElementById("themeToggle");
@@ -86,16 +91,20 @@ const root = document.documentElement;
 function setTheme(theme) {
   root.setAttribute("data-theme", theme);
   localStorage.setItem("theme", theme);
-  themeToggle.textContent = theme === "light" ? "🌙 Dark mode" : "☀️ Light mode";
+  if (themeToggle) {
+    themeToggle.textContent = theme === "light" ? "🌙 Dark mode" : "☀️ Light mode";
+  }
 }
 
 const savedTheme = localStorage.getItem("theme") || "dark";
 setTheme(savedTheme);
 
-themeToggle.addEventListener("click", () => {
-  const current = root.getAttribute("data-theme") || "dark";
-  setTheme(current === "dark" ? "light" : "dark");
-});
+if (themeToggle) {
+  themeToggle.addEventListener("click", () => {
+    const current = root.getAttribute("data-theme") || "dark";
+    setTheme(current === "dark" ? "light" : "dark");
+  });
+}
 
 // ====== Live chat + n8n integration ======
 const chatLauncher = document.getElementById("chatLauncher");
@@ -109,11 +118,39 @@ const chatMessages = document.getElementById("chatMessages");
 const N8N_WEBHOOK_URL = "https://n8n.datatek.tech/webhook/datatek-chat";
 
 function appendMessage(text, sender = "bot") {
+  if (!chatMessages) return;
   const div = document.createElement("div");
   div.classList.add("chat-message", sender);
   div.textContent = text;
   chatMessages.appendChild(div);
   chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// cavabı müxtəlif formatlardan “çıxarmaq” üçün helper
+function extractReply(data) {
+  if (!data) return "";
+
+  // plain text
+  if (typeof data === "string") return data.trim();
+
+  // array qaydarsa
+  if (Array.isArray(data)) {
+    return extractReply(data[0]);
+  }
+
+  // object qaydarsa
+  if (typeof data === "object") {
+    return (
+      (data.reply && String(data.reply)) ||
+      (data.text && String(data.text)) ||
+      (data.output && String(data.output)) ||
+      (data.message && String(data.message)) ||
+      (data.data && extractReply(data.data)) ||
+      ""
+    ).trim();
+  }
+
+  return "";
 }
 
 if (chatLauncher && chatWidget) {
@@ -131,6 +168,7 @@ if (chatCloseBtn && chatWidget) {
 if (chatForm && chatInput) {
   chatForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const message = chatInput.value.trim();
     if (!message) return;
 
@@ -140,14 +178,12 @@ if (chatForm && chatInput) {
 
     // "Yazılır..." mesajı
     appendMessage("Yazılır...", "bot");
-    const typingEl = chatMessages.lastElementChild;
+    const typingEl = chatMessages ? chatMessages.lastElementChild : null;
 
     try {
       const res = await fetch(N8N_WEBHOOK_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message,
           source: "datatek-website",
@@ -155,12 +191,26 @@ if (chatForm && chatInput) {
         }),
       });
 
-      const data = await res.json().catch(() => ({}));
+      // əvvəl text oxu, sonra JSON parse etməyə çalış
+      const raw = await res.text();
+      let data = null;
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        data = raw; // JSON deyilsə plain text kimi saxla
+      }
 
       if (typingEl) typingEl.remove();
 
+      // HTTP xətası varsa (500, 404 və s.)
+      if (!res.ok) {
+        const serverMsg = extractReply(data) || `Server xətası: ${res.status} ${res.statusText}`;
+        appendMessage(serverMsg, "bot");
+        return;
+      }
+
       const replyText =
-        data.reply ||
+        extractReply(data) ||
         "Mesajını aldıq, komandamız tezliklə səninlə əlaqə saxlayacaq ✅";
 
       appendMessage(replyText, "bot");
